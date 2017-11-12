@@ -1,0 +1,70 @@
+*heurindent.txt*  Heuristic indentation detection
+
+Author:  Sven Karsten Greiner <https://www.sammyshp.de/>
+Repo:    https://github.com/SammysHP/vim-heurindent
+License: Same terms as Vim itself (see |license|)
+
+Based on Tim Pope's "Sleuth".
+
+                                                *heurindent*
+This plugin automatically adjusts 'shiftwidth' and 'expandtab' heuristically
+based on the indentation of the current file.
+
+In order to work correctly, 'tabstop' should be set to a sensible value
+(usually you want 'tabstop' to be 8, unless you know what you do).
+
+It is also recommended to set 'smarttab' so that a <Tab> uses 'shiftwidth'
+for indentation (see also |i_Tab|).
+
+This plugin is only available if 'compatible' is not set.
+
+1. Commands                                     |heurindent-commands|
+2. Settings                                     |heurindent-settings|
+
+
+==============================================================================
+1. Commands                                     *heurindent-commands*
+
+                                                *:Heurindent*
+:Heurindent             Detect indentation. Usually this is done automatically
+                        (see |g:heurindent_automatic|).
+
+                                                *HeurindentIndicator()*
+HeurindentIndicator()   Indicator for inclusion in 'statusline'.
+
+
+==============================================================================
+2. Settings                                     *heurindent-settings*
+
+                                                *g:heurindent_automatic*
+                                                *b:heurindent_automatic*
+Automatic detection of indentation can be disabled with: >
+  let g:heurindent_automatic = 0
+  let b:heurindent_automatic = 0
+<
+                                                *g:heurindent_maxlines*
+The number of scanned lines can be set with: >
+  let g:heurindent_maxlines = 1024
+<
+                                                *g:heurindent_min_sw*
+                                                *g:heurindent_max_sw*
+                                                *g:heurindent_weight_factor*
+There are some variables available which can be used to tune the heuristic
+algorithm.
+
+|g:heurindent_min_sw| and |g:heurindent_max_sw| define the bounds in which
+the algorithm tries to find the 'shiftwidth'. The values are constrained by
+"min <= max" and "min > 0". By default min is 2 (i.e. ignore single space
+indentation) and max is the current value of 'tabstop'.
+
+The value of |g:heurindent_weight_factor| controls the decay of the period
+weighting. The algorithm weights each period (e.g. 4, 8, 16...) a little less
+so that the shortest, most often used period is found.
+
+                                                *g:heurindent_debug*
+If you are tuning the algorithm or if you are unsure about why it made a
+specific decision, you can set >
+  let g:heurindent_debug = 1
+<to get some helpful verbosity of the algorithm.
+
+ vim:tw=78:et:ft=help:norl:
