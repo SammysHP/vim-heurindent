@@ -4,7 +4,7 @@ Author:  Sven Karsten Greiner <https://www.sammyshp.de/>
 Repo:    https://github.com/SammysHP/vim-heurindent
 License: Same terms as Vim itself (see |license|)
 
-Based on Tim Pope's "Sleuth".
+Inspired by Tim Pope's "Sleuth".
 
                                                 *heurindent*
 This plugin automatically adjusts 'shiftwidth' and 'expandtab' heuristically
@@ -49,6 +49,7 @@ The number of scanned lines can be set with: >
                                                 *g:heurindent_min_sw*
                                                 *g:heurindent_max_sw*
                                                 *g:heurindent_weight_factor*
+                                                *g:heurindent_ratio_threshold*
 There are some variables available which can be used to tune the heuristic
 algorithm.
 
@@ -60,6 +61,12 @@ indentation) and max is the current value of 'tabstop'.
 The value of |g:heurindent_weight_factor| controls the decay of the period
 weighting. The algorithm weights each period (e.g. 4, 8, 16...) a little less
 so that the shortest, most often used period is found.
+
+By default 'expandtab' is set if there are more soft tabs (indentations with
+more than 'tabstop' spaces) than hard tabs. You can control this threshold by
+setting |g:heurindent_ratio_threshold|. A value of 1 sets always noexpandtab
+while a negative value sets always expandtab. A value of 0 sets noexpandtab
+if there are only hard tabs.
 
                                                 *g:heurindent_debug*
 If you are tuning the algorithm or if you are unsure about why it made a

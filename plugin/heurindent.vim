@@ -56,7 +56,7 @@ function! s:guess(lines) abort
   " Abort if no lines were used in detection
   if !linetype_histogram.total
     if get(g:, 'heurindent_debug', 0)
-      echom "No options guessed!"
+      echom "No useful lines!"
     endif
     return options
   endif
@@ -89,12 +89,15 @@ function! s:guess(lines) abort
   endfor
 
   " Set expandtab depending on soft/hard ratio
-  let options.expandtab = linetype_histogram.soft == linetype_histogram.hard || linetype_histogram.soft > linetype_histogram.hard
+  if linetype_histogram.hard || linetype_histogram.soft
+    let ratio = 1.0 * linetype_histogram.soft / (linetype_histogram.hard + linetype_histogram.soft)
+    let options.expandtab = ratio > get(g:, 'heurindent_ratio_threshold', 0.5)
+  endif
 
   if get(g:, 'heurindent_debug', 0)
     echom 'Linetype histogram: ' . string(linetype_histogram)
-    echom 'Space heuristics: ' . string(space_heuristic)
-    echom 'Applying options: ' . string(options)
+    echom 'Space heuristics:   ' . string(space_heuristic)
+    echom 'Determined options: ' . string(options)
   endif
 
   return options
