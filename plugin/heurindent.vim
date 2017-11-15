@@ -19,14 +19,23 @@ let g:loaded_heurindent = 1
 " (usually you want 'tabstop' to be 8, unless you know what you do).
 function! s:guess(lines) abort
   let options = {}
-  let linetype_histogram = {'hard': 0, 'soft': 0, 'spaces': 0}
+  let linetype_histogram = {'hard': 0, 'soft': 0, 'spaces': 0, 'comment': 0}
   let indent_histogram = {}
   let softtab = repeat(' ', &tabstop)
   let max_indent = 0
 
-  for line in a:lines
+  for row in range(1, a:lines)
+    let line = getline(row)
+
     " Skip empty or not indented lines
     if !len(line) || line =~# '^\s*$' || line =~# '^[^\t ]$'
+      continue
+    endif
+
+    " Skip comments
+    let column = strlen(matchstr(line, '^\s*')) + 1
+    if synIDattr(synIDtrans(synID(row, column, 0)), "name") == "Comment"
+      let linetype_histogram.comment += 1
       continue
     endif
 
@@ -95,9 +104,10 @@ function! s:guess(lines) abort
   endif
 
   if get(g:, 'heurindent_debug', 0)
-    echom 'Linetype histogram: ' . string(linetype_histogram)
-    echom 'Space heuristics:   ' . string(space_heuristic)
-    echom 'Determined options: ' . string(options)
+    echom 'Linetype histogram:    ' . string(linetype_histogram)
+    echom 'Indentation histogram: ' . string(indent_histogram)
+    echom 'Space heuristics:      ' . string(space_heuristic)
+    echom 'Determined options:    ' . string(options)
   endif
 
   return options
@@ -112,7 +122,7 @@ function! s:detect() abort
   endif
 
   let maxlines = get(g:, 'heurindent_maxlines', 1024)
-  let options = s:guess(getline(1, maxlines))
+  let options = s:guess(maxlines)
 
   if !len(options)
     return
