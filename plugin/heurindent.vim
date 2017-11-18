@@ -1,6 +1,6 @@
 " heurindent.vim - Heuristic indentation detection
 
-if exists("g:loaded_heurindent") || v:version < 700 || &cp
+if exists('g:loaded_heurindent') || v:version < 700 || &cp
   finish
 endif
 let g:loaded_heurindent = 1
@@ -23,7 +23,7 @@ function! s:guess(lines) abort
   let indent_histogram = {}
   let softtab = repeat(' ', &tabstop)
   let max_indent = 0
-  let comment = ""
+  let comment = ''
 
   for line in a:lines
     " Skip empty or not indented lines
@@ -59,17 +59,17 @@ function! s:guess(lines) abort
 
       " Now check if the comment ends
       if len(comment)
-        if comment ==# "c"
+        if comment ==# 'c'
           if line =~# '\v\*/(.*/\*)@!'
-            let comment = ""
+            let comment = ''
           endif
-        elseif comment ==# "xml"
+        elseif comment ==# 'xml'
           if line =~# '\v--\>(.*\<\!--)@!'
-            let comment = ""
+            let comment = ''
           endif
-        elseif comment ==# "pyd"
+        elseif comment ==# 'pyd'
           if (comment_multiline && line =~# '\v^\s*""""@!') || line =~# '\v^\s*""""@!.{-}"@1<!""""@!'
-            let comment = ""
+            let comment = ''
           endif
         endif
 
@@ -108,7 +108,7 @@ function! s:guess(lines) abort
   " Abort if no lines were used in detection
   if !linetype_histogram.total
     if get(g:, 'heurindent_debug', 0)
-      echom "No useful lines!"
+      echom 'No useful lines!'
     endif
     return options
   endif
@@ -157,6 +157,20 @@ function! s:guess(lines) abort
 endfunction
 
 
+" Apply options.
+function! s:applyOptions(options) abort
+  if !len(a:options)
+    return 0
+  endif
+
+  for [option, value] in items(a:options)
+    call setbufvar('', '&'.option, value)
+  endfor
+
+  return 1
+endfunction
+
+
 " Detect indentation and set expandtab and shiftwidth.
 " This function should be called to invoke heurindent.
 function! s:detect() abort
@@ -164,16 +178,24 @@ function! s:detect() abort
     return
   endif
 
+  if !exists('b:heurindent_option_backup')
+    let b:heurindent_option_backup = {
+          \ 'shiftwidth': &shiftwidth,
+          \ 'expandtab': &expandtab }
+  endif
+
   let maxlines = get(g:, 'heurindent_maxlines', 1024)
   let options = s:guess(getline(1, maxlines))
 
-  if !len(options)
-    return
-  endif
+  call s:applyOptions(options)
+endfunction
 
-  for [option, value] in items(options)
-    call setbufvar('', '&'.option, value)
-  endfor
+
+" Reset shiftwidth and expandtab to the state before the first invocation
+" of heurindent.
+function! s:reset() abort
+  let b:heurindent_automatic = 0
+  call s:applyOptions(get(b:, 'heurindent_option_backup', {}))
 endfunction
 
 
@@ -198,3 +220,4 @@ augroup heurindent
 augroup END
 
 command! -bar -bang Heurindent call s:detect()
+command! -bar -bang HeurindentReset call s:reset()
