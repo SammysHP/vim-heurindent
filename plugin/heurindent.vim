@@ -19,16 +19,71 @@ let g:loaded_heurindent = 1
 " (usually you want 'tabstop' to be 8, unless you know what you do).
 function! s:guess(lines) abort
   let options = {}
-  let linetype_histogram = {'hard': 0, 'soft': 0, 'spaces': 0}
+  let linetype_histogram = {'hard': 0, 'soft': 0, 'spaces': 0, 'comment': 0}
   let indent_histogram = {}
   let softtab = repeat(' ', &tabstop)
   let max_indent = 0
+  let comment = ""
 
   for line in a:lines
     " Skip empty or not indented lines
-    if !len(line) || line =~# '^\s*$' || line =~# '^[^\t ]$'
+    if !len(line) || line =~# '^\s*$' || line =~# '^\S'
       continue
     endif
+
+    " Increment comment counter. Will be decremented again if no comment
+    " encountered.
+    let linetype_histogram.comment += 1
+
+    let comment_multiline = 1
+
+    " Skip comments
+    " First check, if line starts a comment
+    if !len(comment)
+      let candidates = {}
+
+      let candidates.c   = match(line, '\v/\*')
+      let candidates.xml = match(line, '\v\<\!--')
+      let candidates.pyd = match(line, '\v^\s*\zs""""@!')
+
+      let min = len(line)
+      for [type, position] in items(candidates)
+        if position >= 0 && position < min
+          let min = position
+          let comment = type
+          let comment_multiline = 0
+        endif
+      endfor
+    endif
+
+    " Now check if the comment ends
+    if len(comment)
+      if comment ==# "c"
+        if line =~# '\v\*/(.*/\*)@!'
+          let comment = ""
+        endif
+      elseif comment ==# "xml"
+        if line =~# '\v--\>(.*\<\!--)@!'
+          let comment = ""
+        endif
+      elseif comment ==# "pyd"
+        if (comment_multiline && line =~# '\v^\s*""""@!') || line =~# '\v^\s*""""@!.{-}"@1<!""""@!'
+          let comment = ""
+        endif
+      endif
+
+      " Skip if this is the end of a multi-line comment
+      if comment_multiline
+        continue
+      endif
+    endif
+
+    " " Now skip lines that start with a comment
+    " if line =~# '\v^\s*(/\*|//|\<\!--|#)'
+    "   continue
+    " endif
+
+    let linetype_histogram.comment -= 1
 
     " Increment linetype histogram
     if line =~# '^\t'
@@ -95,9 +150,10 @@ function! s:guess(lines) abort
   endif
 
   if get(g:, 'heurindent_debug', 0)
-    echom 'Linetype histogram: ' . string(linetype_histogram)
-    echom 'Space heuristics:   ' . string(space_heuristic)
-    echom 'Determined options: ' . string(options)
+    echom 'Linetype histogram: '    . string(linetype_histogram)
+    echom 'Indentation histogram: ' . string(indent_histogram)
+    echom 'Space heuristics:   '    . string(space_heuristic)
+    echom 'Determined options: '    . string(options)
   endif
 
   return options
