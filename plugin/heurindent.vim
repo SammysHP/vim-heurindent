@@ -31,59 +31,56 @@ function! s:guess(lines) abort
       continue
     endif
 
-    " Increment comment counter. Will be decremented again if no comment
-    " encountered.
-    let linetype_histogram.comment += 1
+    if get(g:, 'heurindent_skip_comments', 1)
+      " Increment comment counter. Will be decremented again if no comment
+      " encountered.
+      let linetype_histogram.comment += 1
 
-    let comment_multiline = 1
+      let comment_multiline = 1
 
-    " Skip comments
-    " First check, if line starts a comment
-    if !len(comment)
-      let candidates = {}
+      " Skip comments
+      " First check, if line starts a comment
+      if !len(comment)
+        let candidates = {}
 
-      let candidates.c   = match(line, '\v/\*')
-      let candidates.xml = match(line, '\v\<\!--')
-      let candidates.pyd = match(line, '\v^\s*\zs""""@!')
+        let candidates.c   = match(line, '\v/\*')
+        let candidates.xml = match(line, '\v\<\!--')
+        let candidates.pyd = match(line, '\v^\s*\zs""""@!')
 
-      let min = len(line)
-      for [type, position] in items(candidates)
-        if position >= 0 && position < min
-          let min = position
-          let comment = type
-          let comment_multiline = 0
+        let min = len(line)
+        for [type, position] in items(candidates)
+          if position >= 0 && position < min
+            let min = position
+            let comment = type
+            let comment_multiline = 0
+          endif
+        endfor
+      endif
+
+      " Now check if the comment ends
+      if len(comment)
+        if comment ==# "c"
+          if line =~# '\v\*/(.*/\*)@!'
+            let comment = ""
+          endif
+        elseif comment ==# "xml"
+          if line =~# '\v--\>(.*\<\!--)@!'
+            let comment = ""
+          endif
+        elseif comment ==# "pyd"
+          if (comment_multiline && line =~# '\v^\s*""""@!') || line =~# '\v^\s*""""@!.{-}"@1<!""""@!'
+            let comment = ""
+          endif
         endif
-      endfor
-    endif
 
-    " Now check if the comment ends
-    if len(comment)
-      if comment ==# "c"
-        if line =~# '\v\*/(.*/\*)@!'
-          let comment = ""
-        endif
-      elseif comment ==# "xml"
-        if line =~# '\v--\>(.*\<\!--)@!'
-          let comment = ""
-        endif
-      elseif comment ==# "pyd"
-        if (comment_multiline && line =~# '\v^\s*""""@!') || line =~# '\v^\s*""""@!.{-}"@1<!""""@!'
-          let comment = ""
+        " Skip if this is the end of a multi-line comment
+        if comment_multiline
+          continue
         endif
       endif
 
-      " Skip if this is the end of a multi-line comment
-      if comment_multiline
-        continue
-      endif
+      let linetype_histogram.comment -= 1
     endif
-
-    " " Now skip lines that start with a comment
-    " if line =~# '\v^\s*(/\*|//|\<\!--|#)'
-    "   continue
-    " endif
-
-    let linetype_histogram.comment -= 1
 
     " Increment linetype histogram
     if line =~# '^\t'

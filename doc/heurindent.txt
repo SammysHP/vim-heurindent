@@ -19,7 +19,17 @@ for indentation (see also |i_Tab|).
 This plugin is only available if 'compatible' is not set.
 
 1. Commands                                     |heurindent-commands|
+      :Heurindent                               |:Heurindent|
+      HeurindentIndicator()                     |HeurindentIndicator()|
 2. Settings                                     |heurindent-settings|
+      heurindent_automatic                      |g:heurindent_automatic|
+      heurindent_maxlines                       |g:heurindent_maxlines|
+      heurindent_min_sw                         |g:heurindent_min_sw|
+      heurindent_max_sw                         |g:heurindent_max_sw|
+      heurindent_weight_factor                  |g:heurindent_weight_factor|
+      heurindent_ratio_threshold                |g:heurindent_ratio_threshold|
+      heurindent_skip_comments                  |g:heurindent_skip_comments|
+      heurindent_debug                          |g:heurindent_debug|
 
 
 ==============================================================================
@@ -68,6 +78,17 @@ setting |g:heurindent_ratio_threshold|. A value of 1 sets always noexpandtab
 while a negative value sets always expandtab. A value of 0 sets noexpandtab
 if there are only hard tabs.
 
+                                                *g:heurindent_skip_comments*
+Comments are not a reliable source of indentation information, especially
+block comments. Thus block comments are skipped by default. The heuristic for
+comment detection is not perfect, so you can disable skipping comments: >
+  let g:heurindent_skip_comments = 0
+<
+Currently following types are detected: >
+  /* C-style block comments */
+  <!-- XML comments -->
+  """ Python docstrings """
+<
                                                 *g:heurindent_debug*
 If you are tuning the algorithm or if you are unsure about why it made a
 specific decision, you can set >
