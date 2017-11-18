@@ -31,7 +31,7 @@ function! s:guess(lines) abort
       continue
     endif
 
-    if get(g:, 'heurindent_skip_comments', 1)
+    if s:getPreference('skip_comments', 1)
       " Increment comment counter. Will be decremented again if no comment
       " encountered.
       let linetype_histogram.comment += 1
@@ -107,7 +107,7 @@ function! s:guess(lines) abort
 
   " Abort if no lines were used in detection
   if !linetype_histogram.total
-    if get(g:, 'heurindent_debug', 0)
+    if s:getPreference('debug', 0)
       echom 'No useful lines!'
     endif
     return options
@@ -115,8 +115,8 @@ function! s:guess(lines) abort
 
   " Detect shiftwidth
   let space_heuristic = {}
-  let min_sw = max([get(g:, 'heurindent_min_sw', 2), 1])
-  let max_sw = max([get(g:, 'heurindent_max_sw', &tabstop), min_sw])
+  let min_sw = max([s:getPreference('min_sw', 2), 1])
+  let max_sw = max([s:getPreference('max_sw', &tabstop), min_sw])
 
   for i in range(min_sw, max_sw)
     let sum = 0
@@ -127,7 +127,7 @@ function! s:guess(lines) abort
       if has_key(indent_histogram, n)
         let sum += weight * indent_histogram[n]
       endif
-      let weight = weight * get(g:, 'heurindent_weight_factor', 0.8)
+      let weight = weight * s:getPreference('weight_factor', 0.8)
       let n += i
     endwhile
 
@@ -143,10 +143,10 @@ function! s:guess(lines) abort
   " Set expandtab depending on soft/hard ratio
   if linetype_histogram.hard || linetype_histogram.soft
     let ratio = 1.0 * linetype_histogram.soft / (linetype_histogram.hard + linetype_histogram.soft)
-    let options.expandtab = ratio > get(g:, 'heurindent_ratio_threshold', 0.5)
+    let options.expandtab = ratio > s:getPreference('ratio_threshold', 0.5)
   endif
 
-  if get(g:, 'heurindent_debug', 0)
+  if s:getPreference('debug', 0)
     echom 'Linetype histogram: '    . string(linetype_histogram)
     echom 'Indentation histogram: ' . string(indent_histogram)
     echom 'Space heuristics:   '    . string(space_heuristic)
@@ -184,7 +184,7 @@ function! s:detect() abort
           \ 'expandtab': &expandtab }
   endif
 
-  let maxlines = get(g:, 'heurindent_maxlines', 1024)
+  let maxlines = s:getPreference('maxlines', 1024)
   let options = s:guess(getline(1, maxlines))
 
   call s:applyOptions(options)
@@ -196,6 +196,12 @@ endfunction
 function! s:reset() abort
   let b:heurindent_automatic = 0
   call s:applyOptions(get(b:, 'heurindent_option_backup', {}))
+endfunction
+
+
+" Get preference. First try buffer local, then fall back to global.
+function! s:getPreference(name, default) abort
+  return get(b:, 'heurindent_' . a:name, get(g:, a:name, a:default))
 endfunction
 
 
@@ -214,9 +220,7 @@ endfunction
 
 augroup heurindent
   autocmd!
-  autocmd FileType *
-        \ if get(b:, 'heurindent_automatic', get(g:, 'heurindent_automatic', 1))
-        \ | call s:detect() | endif
+  autocmd FileType * if s:getPreference('automatic', 1) | call s:detect() | endif
 augroup END
 
 command! -bar -bang Heurindent call s:detect()

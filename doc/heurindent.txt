@@ -51,11 +51,13 @@ HeurindentIndicator()   Indicator for inclusion in 'statusline'.
 ==============================================================================
 2. Settings                                     *heurindent-settings*
 
+All settings can be used in a global or a bufer local scope. If a setting has
+no buffer local value, heurindent falls back to the global value (and then to
+the built-in default).
+
                                                 *g:heurindent_automatic*
-                                                *b:heurindent_automatic*
 Automatic detection of indentation can be disabled with: >
   let g:heurindent_automatic = 0
-  let b:heurindent_automatic = 0
 <
                                                 *g:heurindent_maxlines*
 The number of scanned lines can be set with: >
