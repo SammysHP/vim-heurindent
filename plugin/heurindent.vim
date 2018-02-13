@@ -201,7 +201,7 @@ endfunction
 
 " Get preference. First try buffer local, then fall back to global.
 function! s:getPreference(name, default) abort
-  return get(b:, 'heurindent_' . a:name, get(g:, a:name, a:default))
+  return get(b:, 'heurindent_' . a:name, get(g:, 'heurindent_' . a:name, a:default))
 endfunction
 
 
