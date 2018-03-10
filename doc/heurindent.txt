@@ -2,7 +2,7 @@
 
 Author:  Sven Karsten Greiner <https://www.sammyshp.de/>
 Repo:    https://github.com/SammysHP/vim-heurindent
-License: Same terms as Vim itself (see |license|)
+License: GPLv3
 
 Inspired by Tim Pope's "Sleuth".
 
