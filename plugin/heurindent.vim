@@ -223,5 +223,5 @@ augroup heurindent
   autocmd FileType * if s:getPreference('automatic', 1) | call s:detect() | endif
 augroup END
 
-command! -bar -bang Heurindent call s:detect()
-command! -bar -bang HeurindentReset call s:reset()
+command! -bar -bang Heurindent if <bang>0 | call s:reset() | else | call s:detect() | endif
+command! -bar HeurindentReset call s:reset()

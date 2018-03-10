@@ -19,7 +19,7 @@ for indentation (see also |i_Tab|).
 This plugin is only available if 'compatible' is not set.
 
 1. Commands                                     |heurindent-commands|
-      :Heurindent                               |:Heurindent|
+      :Heurindent[!]                            |:Heurindent|
       :HeurindentReset                          |:HeurindentReset|
       HeurindentIndicator()                     |HeurindentIndicator()|
 2. Settings                                     |heurindent-settings|
@@ -37,8 +37,9 @@ This plugin is only available if 'compatible' is not set.
 1. Commands                                     *heurindent-commands*
 
                                                 *:Heurindent*
-:Heurindent             Detect indentation. Usually this is done automatically
+:Heurindent[!]          Detect indentation. Usually this is done automatically
                         (see |g:heurindent_automatic|).
+                        With ! same as |:HeurindentReset|.
 
                                                 *:HeurindentReset*
 :HeurindentReset        Reset shiftwidth and expandtab to the state before the
